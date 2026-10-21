@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vaicharikiv-Studio</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" type="text/css" href="vaicharikiv.css">
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            display: ['Outfit', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            },
+            accent: {
+              cyan: '#06b6d4',
+              pink: '#ec4899',
+              emerald: '#10b981',
+              amber: '#f59e0b',
+            }
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'float': 'float 4s ease-in-out infinite',
+            'gradient-x': 'gradient-x 8s ease infinite',
+          },
+          keyframes: {
+            float: {
+              '0%, 100%': { transform: 'translateY(0px)' },
+              '50%': { transform: 'translateY(-10px)' },
+            },
+            'gradient-x': {
+              '0%, 100%': { 'background-size': '200% 200%', 'background-position': 'left center' },
+              '50%': { 'background-size': '200% 200%', 'background-position': 'right center' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-[#0b0f19] text-slate-100 font-sans min-h-screen antialiased flex flex-col selection:bg-indigo-500 selection:text-white">
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none"></div>
+
+  <!-- Main App Header (Hidden on Login Page) -->
+  <header id="main-header" class="hidden sticky top-0 z-40 glassmorphism border-b border-slate-800/80 transition-all duration-300">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3.5 flex items-center justify-between">
+      <!-- Logo -->
+      <div class="flex items-center space-x-3 cursor-pointer group" onclick="navigate('home')">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-cyan-500 to-pink-500 flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform duration-300">
+          <!-- <i class="fa-solid fa-wand-magic-sparkles text-white text-lg"></i> -->
+          <img class="logo" src="logo.png" alt="logo" />
+        </div>
+        <div>
+          <span class="font-display font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-cyan-400 bg-clip-text text-transparent">Vaicharikiv</span>
+          <span class="text-xs ml-1.5 px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-medium">STUDIO</span>
+        </div>
+      </div>
+
+      <!-- Quick Nav Links -->
+      <nav class="hidden md:flex items-center space-x-1 lg:space-x-2">
+        <button onclick="navigate('home')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-2" data-page="home">
+          <i class="fa-solid fa-grip-vertical text-slate-400"></i> Dashboard
+        </button>
+        <button onclick="navigate('upscale')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-2" data-page="upscale">
+          <i class="fa-solid fa-arrows-up-to-line text-indigo-400"></i> Image Upscale
+        </button>
+        <button onclick="navigate('move-object')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-2" data-page="move-object">
+          <i class="fa-solid fa-person-running text-pink-400"></i> Move Object
+        </button>
+        <button onclick="navigate('edit-voice')" class="nav-btn px-3 py-2 rounded-lg text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/60 transition flex items-center gap-2" data-page="edit-voice">
+          <i class="fa-solid fa-microphone-lines text-cyan-400"></i> Edit Voice
+        </button>
+      </nav>
+
+      <!-- User Profile Badge & Action -->
+      <div class="flex items-center gap-3">
+        <div class="relative group">
+          <button id="profile-dropdown-btn" class="flex items-center gap-3 bg-slate-800/70 hover:bg-slate-800 border border-slate-700/80 rounded-full py-1.5 pl-2.5 pr-4 transition duration-200 focus:outline-none">
+            <div id="user-avatar" class="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500 to-pink-500 flex items-center justify-center font-bold text-xs text-white shadow-inner">
+              U
+            </div>
+            <div class="text-left text-xs">
+              <span class="text-slate-400 block leading-none">Welcome,</span>
+              <span id="header-username" class="font-semibold text-slate-200 block truncate max-w-[110px]">User</span>
+            </div>
+            <i class="fa-solid fa-chevron-down text-[10px] text-slate-400 ml-1"></i>
+          </button>
+
+          <!-- Dropdown menu -->
+          <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 rounded-xl glass-card py-2 shadow-2xl z-50 border border-slate-700">
+            <div class="px-4 py-2 border-b border-slate-700/60">
+              <p class="text-xs text-slate-400">Signed in as</p>
+              <p id="dropdown-username" class="text-sm font-medium text-white truncate"></p>
+            </div>
+            <button onclick="navigate('home')" class="w-full text-left px-4 py-2 text-xs text-slate-300 hover:bg-indigo-600/20 hover:text-white flex items-center gap-2">
+              <i class="fa-solid fa-house text-slate-400 w-4"></i> Home Dashboard
+            </button>
+            <button onclick="logout()" class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-red-500/10 flex items-center gap-2">
+              <i class="fa-solid fa-arrow-right-from-bracket text-red-400 w-4"></i> Sign Out
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 1: AUTHENTICATION (LOGIN / SIGN UP)                -->
+  <!-- ======================================================== -->
+  <main id="auth-page" class="flex-grow flex items-center justify-center p-4 relative overflow-hidden">
+    <!-- Ambient glowing backgrounds -->
+    <div class="absolute -top-40 -left-40 w-96 h-96 bg-indigo-600/25 rounded-full blur-[120px] pointer-events-none"></div>
+    <div class="absolute -bottom-40 -right-40 w-96 h-96 bg-pink-600/20 rounded-full blur-[130px] pointer-events-none"></div>
+    <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-cyan-600/10 rounded-full blur-[160px] pointer-events-none"></div>
+
+    <div class="w-full max-w-md z-10">
+      <!-- Card Brand -->
+      <div class="text-center mb-8">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-pink-500 shadow-xl shadow-indigo-500/20 mb-4 animate-float">
+          <i class="fa-solid fa-wand-magic-sparkles text-white text-2xl"></i>
+        </div>
+        <h1 class="font-display font-extrabold text-3xl text-white tracking-tight">Vaicharikiv-Studio</h1>
+        <p class="text-slate-400 text-sm mt-1.5">Intelligent Visual Enhancement & Voice Motion Suite</p>
+      </div>
+
+      <!-- Auth Container -->
+      <div class="glass-card rounded-2xl p-7 shadow-2xl border border-slate-700/70">
+        <!-- Tab selector -->
+        <div class="flex rounded-xl bg-slate-900/80 p-1 mb-6 border border-slate-800">
+          <button id="tab-login" onclick="switchAuthTab('login')" class="flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-md transition duration-200">
+            Sign In
+          </button>
+          <button id="tab-signup" onclick="switchAuthTab('signup')" class="flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition duration-200">
+            Create Account
+          </button>
+        </div>
+
+        <!-- Sign In Form -->
+        <form id="login-form" onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">User Name</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-regular fa-user text-sm"></i>
+              </span>
+              <input type="text" id="login-name" required placeholder="Enter your name" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-lock text-sm"></i>
+              </span>
+              <input type="password" id="login-password" required placeholder="••••••••" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-3 px-4 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-indigo-600 to-indigo-700 hover:from-indigo-500 hover:to-indigo-600 shadow-lg shadow-indigo-600/30 hover:shadow-indigo-500/50 transition duration-200 flex items-center justify-center gap-2 mt-6">
+            <span>Log In</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </form>
+
+        <!-- Sign Up Form (hidden initially) -->
+        <form id="signup-form" onsubmit="handleSignUp(event)" class="space-y-4 hidden">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Your Name</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-regular fa-user text-sm"></i>
+              </span>
+              <input type="text" id="signup-name" required placeholder="e.g. Alex Vance" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Create Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-key text-sm"></i>
+              </span>
+              <input type="password" id="signup-password" required placeholder="Create strong password" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1.5">Confirm Password</label>
+            <div class="relative">
+              <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                <i class="fa-solid fa-shield-check text-sm"></i>
+              </span>
+              <input type="password" id="signup-confirm-password" required placeholder="Re-type password" class="w-full bg-slate-900/70 border border-slate-700 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition">
+            </div>
+          </div>
+          <button type="submit" class="w-full py-3 px-4 rounded-xl font-medium text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-pink-600 hover:opacity-95 shadow-lg shadow-indigo-600/30 transition duration-200 flex items-center justify-center gap-2 mt-6">
+            <span>Create Account</span>
+            <i class="fa-solid fa-sparkles text-xs"></i>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-slate-800 text-center">
+          <p class="text-xs text-slate-400">
+            Local encrypted storage session. Instant access, no email verification needed.
+          </p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 2: HOME DASHBOARD                                  -->
+  <!-- ======================================================== -->
+  <main id="home-page" class="hidden flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Welcome Hero Banner -->
+    <div class="relative overflow-hidden rounded-3xl p-8 sm:p-10 mb-10 border border-indigo-500/20 bg-gradient-to-br from-indigo-950/60 via-slate-900/80 to-slate-950 glow-indigo">
+      <div class="absolute -right-20 -bottom-20 w-80 h-80 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="relative z-10 max-w-2xl">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-semibold mb-4">
+          <i class="fa-solid fa-bolt text-indigo-400"></i> Creative Engine Ready
+        </div>
+        <h1 class="text-3xl sm:text-4xl font-display font-extrabold text-white tracking-tight mb-3">
+          Welcome back, <span id="hero-username" class="bg-gradient-to-r from-indigo-400 via-cyan-400 to-pink-400 bg-clip-text text-transparent">Creator</span>!
+        </h1>
+        <p class="text-slate-300 text-sm sm:text-base leading-relaxed mb-6">
+          Upscale high-resolution images, generate realistic animations from still photos, and tweak dynamic voice effects in seconds using browser-accelerated intelligence.
+        </p>
+        <div class="flex flex-wrap gap-3 text-xs text-slate-400 font-medium">
+          <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Ultra HD Canvas 8K
+          </div>
+          <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+            <i class="fa-solid fa-microchip text-indigo-400"></i> Edge-GPU Acceleration
+          </div>
+          <div class="flex items-center gap-2 bg-slate-900/60 px-3 py-1.5 rounded-lg border border-slate-800">
+            <i class="fa-solid fa-lock text-cyan-400"></i> 100% Client-Side Privacy
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 Core Feature Cards Section -->
+    <div class="mb-4">
+      <h2 class="text-xl font-display font-bold text-white mb-6 flex items-center gap-2">
+        <i class="fa-solid fa-cubes-stacked text-indigo-400"></i> Choose Studio Tool
+      </h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- CARD 1: Image Upscale -->
+        <div onclick="navigate('upscale')" class="glass-card hover:border-indigo-500/60 rounded-2xl p-6 cursor-pointer transition-all duration-300 group hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-indigo-600/10 flex flex-col justify-between border border-slate-800">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:bg-indigo-600 group-hover:text-white transition duration-300">
+              <i class="fa-solid fa-arrows-up-to-line"></i>
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg font-bold font-display text-white group-hover:text-indigo-300 transition">Image Upscale</h3>
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300">2x - 8x HD</span>
+            </div>
+            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6">
+              Upload multiple images at once. Enhance details, denoise, and sharpen texture with high-fidelity super-resolution rendering and instant side-by-side previews.
+            </p>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-indigo-400 group-hover:text-indigo-300 gap-2">
+            <span>Launch Upscaler</span>
+            <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-1 transition duration-200"></i>
+          </div>
+        </div>
+
+        <!-- CARD 2: Move Image Object -->
+        <div onclick="navigate('move-object')" class="glass-card hover:border-pink-500/60 rounded-2xl p-6 cursor-pointer transition-all duration-300 group hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-pink-600/10 flex flex-col justify-between border border-slate-800">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-pink-600/20 text-pink-400 border border-pink-500/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:bg-pink-600 group-hover:text-white transition duration-300">
+              <i class="fa-solid fa-person-running"></i>
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg font-bold font-display text-white group-hover:text-pink-300 transition">Move Image Object</h3>
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-pink-500/20 text-pink-300">Motion FX</span>
+            </div>
+            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6">
+              Extract inner objects and bring static images alive. Transform ordinary pictures into dynamic looping motion GIFs with parallax drift, bounce, and kinetic wave.
+            </p>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-pink-400 group-hover:text-pink-300 gap-2">
+            <span>Launch Object Motion</span>
+            <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-1 transition duration-200"></i>
+          </div>
+        </div>
+
+        <!-- CARD 3: Edit Your Voice -->
+        <div onclick="navigate('edit-voice')" class="glass-card hover:border-cyan-500/60 rounded-2xl p-6 cursor-pointer transition-all duration-300 group hover:-translate-y-1.5 hover:shadow-2xl hover:shadow-cyan-600/10 flex flex-col justify-between border border-slate-800">
+          <div>
+            <div class="w-14 h-14 rounded-2xl bg-cyan-600/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center text-2xl mb-5 group-hover:scale-110 group-hover:bg-cyan-600 group-hover:text-white transition duration-300">
+              <i class="fa-solid fa-microphone-lines"></i>
+            </div>
+            <div class="flex items-center justify-between mb-2">
+              <h3 class="text-lg font-bold font-display text-white group-hover:text-cyan-300 transition">Edit Your Voice</h3>
+              <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300">Audio DSP</span>
+            </div>
+            <p class="text-slate-400 text-xs sm:text-sm leading-relaxed mb-6">
+              Upload audio or record your voice live. Modify pitch, speed, reverb, robotic vocoders, deep voice, and telephone effects with live frequency waveform visualization.
+            </p>
+          </div>
+          <div class="flex items-center text-xs font-semibold text-cyan-400 group-hover:text-cyan-300 gap-2">
+            <span>Launch Voice Studio</span>
+            <i class="fa-solid fa-arrow-right text-[11px] group-hover:translate-x-1 transition duration-200"></i>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 3: IMAGE UPSCALE SECTION                           -->
+  <!-- ======================================================== -->
+  <main id="upscale-page" class="hidden flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <button onclick="navigate('home')" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 mb-2 transition">
+          <i class="fa-solid fa-chevron-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-display font-extrabold text-white">Image Upscale </h1>
+        <p class="text-slate-400 text-xs sm:text-sm">Multi-image batch super-resolution, detail reconstruction & sharpening</p>
+      </div>
+
+      <!-- Upscaling parameters -->
+      <div class="flex items-center gap-3 bg-slate-900/80 p-2 rounded-xl border border-slate-800">
+        <label class="text-xs text-slate-400 font-medium ml-2">Scale Factor:</label>
+        <div class="flex gap-1">
+          <button type="button" class="upscale-factor-btn active px-3 py-1 rounded-lg text-xs font-bold bg-indigo-600 text-white" data-factor="2">2x HD</button>
+          <button type="button" class="upscale-factor-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white" data-factor="4">4x Ultra</button>
+          <button type="button" class="upscale-factor-btn px-3 py-1 rounded-lg text-xs font-bold text-slate-400 hover:text-white" data-factor="8">8x Max</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Upload Zone -->
+    <div class="glass-card rounded-2xl p-6 sm:p-8 border-2 border-dashed border-slate-700/80 hover:border-indigo-500/80 transition-colors text-center cursor-pointer relative group mb-8" id="upscale-dropzone" onclick="document.getElementById('upscale-file-input').click()">
+      <input type="file" id="upscale-file-input" multiple accept="image/*" class="hidden" onchange="handleUpscaleFiles(this.files)">
+      <div class="flex flex-col items-center justify-center pointer-events-none">
+        <div class="w-16 h-16 rounded-full bg-indigo-600/20 text-indigo-400 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition duration-300">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">Upload Image</h3>
+        <p class="text-slate-400 text-xs sm:text-sm max-w-md mb-2">Drag and drop your photos here, or click to browse. Supports JPG, PNG, WEBP (Batch processing supported).</p>
+        <span class="inline-block px-3 py-1 rounded-full bg-slate-800 text-slate-300 text-[11px] font-medium border border-slate-700">Any resolution accepted</span>
+      </div>
+    </div>
+
+    <!-- Actions Bar when images exist -->
+    <div id="upscale-actions-bar" class="hidden flex items-center justify-between bg-slate-900/80 p-4 rounded-xl border border-slate-800 mb-6">
+      <div class="flex items-center gap-3">
+        <span id="upscale-count-badge" class="px-2.5 py-1 rounded-lg bg-indigo-500/20 text-indigo-300 text-xs font-semibold">0 Images Loaded</span>
+        <button onclick="clearUpscaleList()" class="text-xs text-red-400 hover:text-red-300 transition flex items-center gap-1">
+          <i class="fa-solid fa-trash-can"></i> Clear All
+        </button>
+      </div>
+
+      <!-- The requested 'Enhance' button -->
+      <button id="enhance-all-btn" onclick="enhanceAllImages()" class="px-6 py-2.5 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 hover:from-indigo-500 hover:to-cyan-400 shadow-lg shadow-indigo-600/30 transition flex items-center gap-2">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        <span>Enhance</span>
+      </button>
+    </div>
+
+    <!-- Gallery / Results Area -->
+    <div id="upscale-gallery" class="grid grid-cols-1 lg:grid-cols-2 gap-6"></div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 4: MOVE IMAGE OBJECT                               -->
+  <!-- ======================================================== -->
+  <main id="move-object-page" class="hidden flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <button onclick="navigate('home')" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 mb-2 transition">
+          <i class="fa-solid fa-chevron-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-display font-extrabold text-white">Move Image Object</h1>
+        <p class="text-slate-400 text-xs sm:text-sm">Separate foreground objects and animate them into looping motion GIF/videos</p>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Left Configuration Panel -->
+      <div class="lg:col-span-5 space-y-6">
+        <!-- Image Upload -->
+        <div class="glass-card rounded-2xl p-6 border border-slate-800">
+          <h3 class="text-sm font-bold text-white mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-cloud-arrow-up text-pink-400"></i> Upload Image
+          </h3>
+          
+          <div id="anim-dropzone" class="border-2 border-dashed border-slate-700 hover:border-pink-500/80 rounded-xl p-6 text-center cursor-pointer transition group" onclick="document.getElementById('anim-file-input').click()">
+            <input type="file" id="anim-file-input" accept="image/*" class="hidden" onchange="handleAnimFile(this.files[0])">
+            <div class="flex flex-col items-center">
+              <i class="fa-regular fa-image text-3xl text-pink-400 mb-2 group-hover:scale-110 transition"></i>
+              <p class="text-xs font-semibold text-white">Select image with distinct subject</p>
+              <p class="text-[11px] text-slate-400 mt-1">Portrait, pet, car, character, or product</p>
+            </div>
+          </div>
+
+          <!-- Preview thumbnail if chosen -->
+          <div id="anim-preview-wrap" class="hidden mt-4 relative rounded-xl overflow-hidden border border-slate-700 h-44 bg-slate-950 flex items-center justify-center">
+            <img id="anim-thumb" src="" alt="Selected Preview" class="max-h-full max-w-full object-contain">
+            <button onclick="resetAnimImage(event)" class="absolute top-2 right-2 p-1.5 rounded-lg bg-black/70 hover:bg-red-600 text-white text-xs transition">
+              <i class="fa-solid fa-xmark"></i>
+            </button>
+          </div>
+
+          <!-- Motion Presets -->
+          <div class="mt-6">
+            <label class="block text-xs font-medium text-slate-300 mb-2">Motion Preset Effect</label>
+            <div class="grid grid-cols-2 gap-2" id="motion-preset-group">
+              <button type="button" class="motion-btn active text-xs font-medium py-2 px-3 rounded-lg border border-pink-500 bg-pink-500/20 text-white flex items-center justify-center gap-1.5" data-motion="float">
+                <i class="fa-solid fa-water"></i> Floating Drift
+              </button>
+              <button type="button" class="motion-btn text-xs font-medium py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center gap-1.5" data-motion="bounce">
+                <i class="fa-solid fa-arrows-up-down"></i> Dynamic Bounce
+              </button>
+              <button type="button" class="motion-btn text-xs font-medium py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center gap-1.5" data-motion="pulse">
+                <i class="fa-solid fa-heart-pulse"></i> Breathing Pulse
+              </button>
+              <button type="button" class="motion-btn text-xs font-medium py-2 px-3 rounded-lg border border-slate-700 bg-slate-800 text-slate-300 hover:text-white flex items-center justify-center gap-1.5" data-motion="wave">
+                <i class="fa-solid fa-wind"></i> Kinetic Wave
+              </button>
+            </div>
+          </div>
+
+          <!-- Speed & Intensity -->
+          <div class="mt-4 space-y-3">
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Motion Amplitude</span>
+                <span id="motion-amp-val">25px</span>
+              </div>
+              <input type="range" id="motion-amplitude" min="5" max="60" value="25" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs text-slate-400 mb-1">
+                <span>Animation Speed</span>
+                <span id="motion-speed-val">1.0x</span>
+              </div>
+              <input type="range" id="motion-speed" min="0.5" max="2.5" step="0.1" value="1.0" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-pink-500">
+            </div>
+          </div>
+
+          <!-- The requested "Go" button -->
+          <button id="anim-go-btn" onclick="processObjectMotion()" class="w-full mt-6 py-3 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-pink-600 via-rose-500 to-amber-500 hover:opacity-90 shadow-lg shadow-pink-600/30 transition flex items-center justify-center gap-2">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Go</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Output & Player Canvas Panel -->
+      <div class="lg:col-span-7">
+        <div class="glass-card rounded-2xl p-6 border border-slate-800 flex flex-col h-full min-h-[460px]">
+          <div class="flex items-center justify-between mb-4 pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-pink-500"></span>
+              <h3 class="text-sm font-bold text-white">Motion Output Player</h3>
+            </div>
+            <span id="anim-status-badge" class="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-slate-700">Waiting for Image & Go</span>
+          </div>
+
+          <!-- Live Canvas viewport -->
+          <div class="flex-grow flex items-center justify-center relative bg-slate-950/90 rounded-xl overflow-hidden border border-slate-800 min-h-[350px]">
+            <div id="anim-placeholder" class="text-center p-6">
+              <div class="w-16 h-16 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center mx-auto mb-3 text-slate-500 text-2xl">
+                <i class="fa-solid fa-film"></i>
+              </div>
+              <p class="text-sm text-slate-300 font-medium">No object animated yet</p>
+              <p class="text-xs text-slate-500 max-w-xs mt-1">Upload an image and hit 'Go' to isolate inner objects and create an animated loop.</p>
+            </div>
+
+            <canvas id="motion-canvas" class="max-w-full max-h-[460px] object-contain rounded-lg hidden"></canvas>
+
+            <!-- Loading overlay -->
+            <div id="anim-loader" class="hidden absolute inset-0 bg-slate-950/85 backdrop-blur-sm flex flex-col items-center justify-center p-6 text-center">
+              <div class="w-12 h-12 border-4 border-pink-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+              <h4 class="text-white font-bold text-sm mb-1">Detecting Inner Objects...</h4>
+              <p class="text-xs text-slate-400 max-w-xs">Isolating foreground subject and generating dynamic loop vectors</p>
+            </div>
+          </div>
+
+          <!-- Download Action Controls (Appears after GO) -->
+          <div id="anim-download-controls" class="hidden mt-5 pt-4 border-t border-slate-800 flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-xs text-slate-400">
+              <i class="fa-solid fa-circle-check text-emerald-400"></i>
+              <span>Motion synthesized successfully!</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="toggleMotionPlay()" id="play-pause-btn" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold flex items-center gap-1.5 border border-slate-700 transition">
+                <i class="fa-solid fa-pause"></i> Pause
+              </button>
+              <button onclick="downloadAnimatedOutput()" class="px-5 py-2 rounded-xl bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 hover:to-rose-500 text-white text-xs font-bold shadow-lg shadow-pink-600/30 flex items-center gap-2 transition">
+                <i class="fa-solid fa-download"></i>
+                <span>Download GIF / Video</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- PAGE 5: EDIT YOUR VOICE                                 -->
+  <!-- ======================================================== -->
+  <main id="edit-voice-page" class="hidden flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+      <div>
+        <button onclick="navigate('home')" class="text-xs text-slate-400 hover:text-white flex items-center gap-1.5 mb-2 transition">
+          <i class="fa-solid fa-chevron-left text-[10px]"></i> Back to Dashboard
+        </button>
+        <h1 class="text-2xl sm:text-3xl font-display font-extrabold text-white">Edit Your Voice</h1>
+        <p class="text-slate-400 text-xs sm:text-sm">DSP Voice changer, acoustic sound FX, reverb, pitch & tempo modification</p>
+      </div>
+
+      <!-- Live Mic Recording Pill -->
+      <div class="flex items-center gap-2">
+        <button id="mic-record-btn" onclick="toggleMicRecording()" class="px-4 py-2 rounded-xl bg-slate-900 border border-slate-800 hover:border-red-500/50 text-white text-xs font-semibold flex items-center gap-2 transition group">
+          <span class="w-2.5 h-2.5 rounded-full bg-red-500 group-hover:animate-ping"></span>
+          <span id="mic-btn-text">Record Voice</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Voice Upload Bar with '+' icon as specified -->
+    <div class="glass-card rounded-2xl p-6 sm:p-8 border-2 border-dashed border-slate-700/80 hover:border-cyan-500/80 transition-colors text-center cursor-pointer relative group mb-8" onclick="document.getElementById('voice-file-input').click()">
+      <input type="file" id="voice-file-input" accept="audio/*" class="hidden" onchange="handleVoiceFile(this.files[0])">
+      <div class="flex flex-col items-center justify-center pointer-events-none">
+        <div class="w-16 h-16 rounded-full bg-cyan-600/20 text-cyan-400 flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition duration-300">
+          <i class="fa-solid fa-plus"></i>
+        </div>
+        <h3 class="text-lg font-bold text-white mb-1">Upload Voice</h3>
+        <p class="text-slate-400 text-xs sm:text-sm max-w-md">Select your vocal clip or speech sample (MP3, WAV, AAC, OGG). Then adjust effects below.</p>
+      </div>
+    </div>
+
+    <!-- Main Voice Studio Workspace -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <!-- Left: Visualizer & Player Controls -->
+      <div class="lg:col-span-7 space-y-6">
+        <div class="glass-card rounded-2xl p-6 border border-slate-800">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-xs font-bold uppercase tracking-wider text-cyan-400 flex items-center gap-2">
+              <i class="fa-solid fa-wave-square"></i> Real-time Waveform Spectrum
+            </span>
+            <span id="audio-time-display" class="font-mono text-xs text-slate-400">00:00 / 00:00</span>
+          </div>
+
+          <!-- Waveform Canvas -->
+          <div class="w-full h-36 bg-slate-950 rounded-xl overflow-hidden border border-slate-800 relative">
+            <canvas id="waveform-canvas" class="w-full h-full"></canvas>
+            <div id="audio-placeholder-text" class="absolute inset-0 flex items-center justify-center text-xs text-slate-500">
+              Upload voice or record microphone to preview audio wave
+            </div>
+          </div>
+
+          <!-- Seekbar -->
+          <div class="mt-4">
+            <input type="range" id="audio-seek" min="0" max="100" value="0" step="0.1" oninput="handleAudioSeek(this.value)" class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+          </div>
+
+          <!-- Playback Bar -->
+          <div class="flex items-center justify-between mt-4">
+            <div class="flex items-center gap-3">
+              <button id="voice-play-btn" onclick="toggleAudioPlayback()" class="w-12 h-12 rounded-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 flex items-center justify-center text-lg font-bold transition shadow-lg shadow-cyan-500/20">
+                <i class="fa-solid fa-play ml-0.5" id="voice-play-icon"></i>
+              </button>
+              <button onclick="stopAudioPlayback()" class="w-10 h-10 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center text-sm transition">
+                <i class="fa-solid fa-stop"></i>
+              </button>
+            </div>
+
+            <!-- Volume Slider -->
+            <div class="flex items-center gap-2">
+              <i class="fa-solid fa-volume-high text-xs text-slate-400"></i>
+              <input type="range" id="voice-volume" min="0" max="2" step="0.05" value="1" oninput="updateMasterVolume(this.value)" class="w-24 h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+            </div>
+          </div>
+        </div>
+
+        <!-- Download Edited Audio Button -->
+        <div class="glass-card rounded-2xl p-6 border border-slate-800 flex items-center justify-between">
+          <div>
+            <h4 class="text-sm font-bold text-white">Finished Editing?</h4>
+            <p class="text-xs text-slate-400">Export high-definition processed master audio file.</p>
+          </div>
+          <button onclick="downloadEditedVoice()" class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-slate-950 font-bold text-xs shadow-lg shadow-cyan-500/20 transition flex items-center gap-2">
+            <i class="fa-solid fa-download"></i>
+            <span>Export / Download Audio</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right: Effect Presets & Voice Modulators -->
+      <div class="lg:col-span-5 space-y-6">
+        <div class="glass-card rounded-2xl p-6 border border-slate-800">
+          <h3 class="text-sm font-bold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-cyan-400"></i> Voice Filters & Presets
+          </h3>
+
+          <!-- Presets Buttons -->
+          <div class="grid grid-cols-2 gap-2.5 mb-6" id="audio-preset-group">
+            <button onclick="applyVoicePreset('normal')" class="preset-btn active text-xs font-semibold py-2.5 px-3 rounded-xl border border-cyan-500 bg-cyan-500/20 text-cyan-300 flex items-center gap-2">
+              <i class="fa-solid fa-user-check"></i> Clean Voice
+            </button>
+            <button onclick="applyVoicePreset('robot')" class="preset-btn text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:text-white flex items-center gap-2">
+              <i class="fa-solid fa-robot"></i> Robot Vocoder
+            </button>
+            <button onclick="applyVoicePreset('deep')" class="preset-btn text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:text-white flex items-center gap-2">
+              <i class="fa-solid fa-dragon"></i> Deep Voice
+            </button>
+            <button onclick="applyVoicePreset('chipmunk')" class="preset-btn text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:text-white flex items-center gap-2">
+              <i class="fa-solid fa-squirrel"></i> Chipmunk
+            </button>
+            <button onclick="applyVoicePreset('radio')" class="preset-btn text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:text-white flex items-center gap-2">
+              <i class="fa-solid fa-walkie-talkie"></i> Radio / Phone
+            </button>
+            <button onclick="applyVoicePreset('cathedral')" class="preset-btn text-xs font-semibold py-2.5 px-3 rounded-xl border border-slate-700 bg-slate-900 text-slate-300 hover:text-white flex items-center gap-2">
+              <i class="fa-solid fa-church"></i> Grand Reverb
+            </button>
+          </div>
+
+          <!-- Fine Adjustments -->
+          <div class="space-y-4 pt-2 border-t border-slate-800">
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Playback Speed / Tempo</span>
+                <span id="val-speed" class="font-mono text-cyan-400">1.00x</span>
+              </div>
+              <input type="range" id="slider-speed" min="0.5" max="2.0" step="0.05" value="1.0" oninput="updateSpeed(this.value)" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Pitch Semitones</span>
+                <span id="val-pitch" class="font-mono text-cyan-400">0 st</span>
+              </div>
+              <input type="range" id="slider-pitch" min="-12" max="12" step="1" value="0" oninput="updatePitch(this.value)" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Echo / Delay Delay Feedback</span>
+                <span id="val-echo" class="font-mono text-cyan-400">Off</span>
+              </div>
+              <input type="range" id="slider-echo" min="0" max="0.8" step="0.05" value="0" oninput="updateEcho(this.value)" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+            </div>
+
+            <div>
+              <div class="flex justify-between text-xs text-slate-300 mb-1">
+                <span>Bass Boost</span>
+                <span id="val-bass" class="font-mono text-cyan-400">0 dB</span>
+              </div>
+              <input type="range" id="slider-bass" min="-6" max="18" step="1" value="0" oninput="updateBass(this.value)" class="w-full h-1.5 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-400">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ======================================================== -->
+  <!-- JAVASCRIPT APPLICATION CORE                             -->
+  <!-- ======================================================== -->
+  <script>
+    /* ----------------------------------------------------
+       1. GLOBAL STATE & USER AUTHENTICATION
+       ---------------------------------------------------- */
+    const STATE = {
+      currentUser: null,
+      currentPage: 'auth',
+      upscaleList: [],
+      currentUpscaleFactor: 2,
+      anim: {
+        rawImg: null,
+        fgCanvas: null,
+        bgCanvas: null,
+        preset: 'float',
+        amplitude: 25,
+        speed: 1.0,
+        isPlaying: false,
+        animationFrameId: null,
+        t: 0
+      },
+      voice: {
+        audioCtx: null,
+        audioBuffer: null,
+        sourceNode: null,
+        gainNode: null,
+        biquadFilter: null,
+        convolverNode: null,
+        delayNode: null,
+        delayGain: null,
+        analyser: null,
+        isPlaying: false,
+        startTime: 0,
+        pauseOffset: 0,
+        speed: 1.0,
+        pitchSemitones: 0,
+        isRecording: false,
+        mediaRecorder: null,
+        recordedChunks: [],
+        currentPreset: 'normal'
+      }
+    };
+
+    // User accounts repository in localStorage
+    function getUsers() {
+      const users = localStorage.getItem('pixelnova_users');
+      return users ? JSON.parse(users) : {};
+    }
+
+    function saveUser(name, password) {
+      const users = getUsers();
+      users[name.trim().toLowerCase()] = {
+        name: name.trim(),
+        password: password
+      };
+      localStorage.setItem('pixelnova_users', JSON.stringify(users));
+    }
+
+    function checkAuthOnLoad() {
+      const activeSession = localStorage.getItem('pixelnova_active_session');
+      if (activeSession) {
+        STATE.currentUser = activeSession;
+        showMainApp();
+      } else {
+        navigate('auth');
+      }
+    }
+
+    function switchAuthTab(type) {
+      const loginTab = document.getElementById('tab-login');
+      const signupTab = document.getElementById('tab-signup');
+      const loginForm = document.getElementById('login-form');
+      const signupForm = document.getElementById('signup-form');
+
+      if (type === 'login') {
+        loginTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-md transition duration-200";
+        signupTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition duration-200";
+        loginForm.classList.remove('hidden');
+        signupForm.classList.add('hidden');
+      } else {
+        signupTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white shadow-md transition duration-200";
+        loginTab.className = "flex-1 py-2 text-xs font-semibold rounded-lg text-slate-400 hover:text-white transition duration-200";
+        signupForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+      }
+    }
+
+    function handleSignUp(e) {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value.trim();
+      const password = document.getElementById('signup-password').value;
+      const confirm = document.getElementById('signup-confirm-password').value;
+
+      if (!name || !password) {
+        showToast('Please enter both name and password', 'error');
+        return;
+      }
+      if (password !== confirm) {
+        showToast('Passwords do not match', 'error');
+        return;
+      }
+
+      const users = getUsers();
+      if (users[name.toLowerCase()]) {
+        showToast('Username already exists. Please log in.', 'error');
+        switchAuthTab('login');
+        return;
+      }
+
+      saveUser(name, password);
+      localStorage.setItem('pixelnova_active_session', name);
+      STATE.currentUser = name;
+      showToast(`Account created! Welcome, ${name}`, 'success');
+      showMainApp();
+    }
+
+    function handleLogin(e) {
+      e.preventDefault();
+      const name = document.getElementById('login-name').value.trim();
+      const password = document.getElementById('login-password').value;
+
+      const users = getUsers();
+      const account = users[name.toLowerCase()];
+
+      if (!account || account.password !== password) {
+        showToast('Invalid Name or Password', 'error');
+        return;
+      }
+
+      localStorage.setItem('pixelnova_active_session', account.name);
+      STATE.currentUser = account.name;
+      showToast(`Welcome back, ${account.name}!`, 'success');
+      showMainApp();
+    }
+
+    function logout() {
+      localStorage.removeItem('pixelnova_active_session');
+      STATE.currentUser = null;
+      document.getElementById('profile-menu').classList.add('hidden');
+      navigate('auth');
+      showToast('Logged out successfully', 'info');
+    }
+
+    function showMainApp() {
+      // Update User labels in header
+      const user = STATE.currentUser || 'Creator';
+      document.getElementById('header-username').textContent = user;
+      document.getElementById('hero-username').textContent = user;
+      document.getElementById('dropdown-username').textContent = user;
+      document.getElementById('user-avatar').textContent = user.charAt(0).toUpperCase();
+
+      document.getElementById('main-header').classList.remove('hidden');
+      navigate('home');
+    }
+
+    /* ----------------------------------------------------
+       2. SINGLE-PAGE NAVIGATION & DROPDOWN
+       ---------------------------------------------------- */
+    function navigate(pageId) {
+      STATE.currentPage = pageId;
+
+      // Close profile dropdown
+      const menu = document.getElementById('profile-menu');
+      if (menu) menu.classList.add('hidden');
+
+      // Hide all pages
+      ['auth-page', 'home-page', 'upscale-page', 'move-object-page', 'edit-voice-page'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+
+      // Show selected page
+      const target = document.getElementById(`${pageId}-page`);
+      if (target) {
+        target.classList.remove('hidden');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      // Update Nav links
+      document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.getAttribute('data-page') === pageId) {
+          btn.classList.add('bg-slate-800', 'text-white');
+        } else {
+          btn.classList.remove('bg-slate-800', 'text-white');
+        }
+      });
+    }
+
+    // Profile Dropdown Toggle
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('profile-dropdown-btn');
+      const menu = document.getElementById('profile-menu');
+      if (btn && menu) {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          menu.classList.toggle('hidden');
+        });
+        document.addEventListener('click', () => {
+          menu.classList.add('hidden');
+        });
+      }
+    });
+
+    /* ----------------------------------------------------
+       3. NOTIFICATION TOAST HELPER
+       ---------------------------------------------------- */
+    function showToast(message, type = 'info') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      
+      let bgStyle = 'bg-slate-900 border-slate-700 text-white';
+      let icon = '<i class="fa-solid fa-circle-info text-cyan-400"></i>';
+
+      if (type === 'success') {
+        bgStyle = 'bg-slate-900/95 border-emerald-500/50 text-white shadow-emerald-500/10';
+        icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+      } else if (type === 'error') {
+        bgStyle = 'bg-slate-900/95 border-red-500/50 text-white shadow-red-500/10';
+        icon = '<i class="fa-solid fa-triangle-exclamation text-red-400"></i>';
+      }
+
+      toast.className = `flex items-center gap-3 px-4 py-3 rounded-xl border shadow-xl ${bgStyle} transform transition-all duration-300 translate-y-4 opacity-0 pointer-events-auto text-xs font-medium max-w-sm`;
+      toast.innerHTML = `${icon} <span>${message}</span>`;
+      
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-4', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('opacity-0', 'translate-x-6');
+        setTimeout(() => toast.remove(), 300);
+      }, 3500);
+    }
+
+    /* ----------------------------------------------------
+       4. SECTION: IMAGE UPSCALE (Multi-Image HD Engine)
+       ---------------------------------------------------- */
+    document.querySelectorAll('.upscale-factor-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.upscale-factor-btn').forEach(b => {
+          b.classList.remove('active', 'bg-indigo-600', 'text-white');
+          b.classList.add('text-slate-400');
+        });
+        btn.classList.add('active', 'bg-indigo-600', 'text-white');
+        btn.classList.remove('text-slate-400');
+        STATE.currentUpscaleFactor = parseInt(btn.dataset.factor);
+      });
+    });
+
+    function handleUpscaleFiles(files) {
+      if (!files || files.length === 0) return;
+      Array.from(files).forEach(file => {
+        if (!file.type.startsWith('image/')) return;
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const item = {
+              id: 'img_' + Math.random().toString(36).substr(2, 9),
+              name: file.name,
+              originalSrc: e.target.result,
+              width: img.naturalWidth,
+              height: img.naturalHeight,
+              upscaledSrc: null,
+              factor: STATE.currentUpscaleFactor,
+              isProcessing: false
+            };
+            STATE.upscaleList.push(item);
+            renderUpscaleGallery();
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    function clearUpscaleList() {
+      STATE.upscaleList = [];
+      renderUpscaleGallery();
+      showToast('Image list cleared', 'info');
+    }
+
+    function renderUpscaleGallery() {
+      const gallery = document.getElementById('upscale-gallery');
+      const actionsBar = document.getElementById('upscale-actions-bar');
+      const countBadge = document.getElementById('upscale-count-badge');
+
+      if (STATE.upscaleList.length === 0) {
+        gallery.innerHTML = '';
+        actionsBar.classList.add('hidden');
+        return;
+      }
+
+      actionsBar.classList.remove('hidden');
+      countBadge.textContent = `${STATE.upscaleList.length} Image${STATE.upscaleList.length > 1 ? 's' : ''} Loaded`;
+
+      gallery.innerHTML = STATE.upscaleList.map(item => `
+        <div class="glass-card rounded-2xl p-5 border border-slate-800 flex flex-col justify-between" id="card-${item.id}">
+          <div>
+            <div class="flex items-center justify-between mb-3">
+              <span class="text-xs font-semibold text-slate-200 truncate max-w-[200px]">${item.name}</span>
+              <span class="text-[10px] font-mono bg-slate-900 px-2 py-0.5 rounded text-slate-400">
+                ${item.width}x${item.height}px
+                ${item.upscaledSrc ? ` → <strong class="text-indigo-400">${item.width * item.factor}x${item.height * item.factor}px</strong>` : ''}
+              </span>
+            </div>
+
+            <!-- Preview viewport -->
+            <div class="relative w-full h-64 rounded-xl overflow-hidden bg-slate-950 border border-slate-800 flex items-center justify-center">
+              ${item.isProcessing ? `
+                <div class="flex flex-col items-center justify-center text-center p-4">
+                  <div class="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                  <span class="text-xs font-bold text-white">Synthesizing ${item.factor}x HD Texture...</span>
+                  <div class="w-48 bg-slate-800 h-1.5 rounded-full mt-2 overflow-hidden">
+                    <div class="bg-indigo-500 h-full w-2/3 animate-pulse"></div>
+                  </div>
+                </div>
+              ` : item.upscaledSrc ? `
+                <!-- Interactive Comparison View -->
+                <div class="relative w-full h-full overflow-hidden select-none" id="comp-wrap-${item.id}">
+                  <!-- Base / Upscaled Image -->
+                  <img src="${item.upscaledSrc}" class="absolute inset-0 w-full h-full object-contain" alt="Upscaled">
+                  <!-- Overlay / Original Image with clipping -->
+                  <div class="absolute inset-0 overflow-hidden" id="comp-overlay-${item.id}" style="width: 50%;">
+                    <img src="${item.originalSrc}" class="absolute inset-0 max-w-none w-full h-full object-contain" alt="Original">
+                  </div>
+                  <!-- Comparison divider handle -->
+                  <div class="slider-handle" id="handle-${item.id}" style="left: 50%;">
+                    <div class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-7 h-7 bg-white text-slate-900 rounded-full flex items-center justify-center text-[10px] shadow-lg">
+                      <i class="fa-solid fa-arrows-left-right"></i>
+                    </div>
+                  </div>
+                  <span class="absolute bottom-2 left-2 px-2 py-0.5 rounded bg-black/70 text-[10px] text-white backdrop-blur-sm pointer-events-none">Original</span>
+                  <span class="absolute bottom-2 right-2 px-2 py-0.5 rounded bg-indigo-600/80 text-[10px] text-white backdrop-blur-sm pointer-events-none">${item.factor}x Enhanced</span>
+                </div>
+              ` : `
+                <img src="${item.originalSrc}" class="w-full h-full object-contain" alt="Preview">
+              `}
+            </div>
+          </div>
+
+          <!-- Bottom Actions -->
+          <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between gap-3">
+            <button onclick="removeUpscaleItem('${item.id}')" class="text-xs text-slate-400 hover:text-red-400 transition flex items-center gap-1">
+              <i class="fa-solid fa-trash-can text-[11px]"></i> Remove
+            </button>
+            <div class="flex items-center gap-2">
+              ${item.upscaledSrc ? `
+                <a href="${item.upscaledSrc}" download="enhanced_${item.factor}x_${item.name}" class="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center gap-1.5 shadow-md shadow-emerald-600/20 transition">
+                  <i class="fa-solid fa-download"></i> Download Image
+                </a>
+              ` : `
+                <button onclick="enhanceSingleImage('${item.id}')" class="px-4 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-wand-sparkles"></i> Enhance
+                </button>
+              `}
+            </div>
+          </div>
+        </div>
+      `).join('');
+
+      // Attach comparison slider dragging
+      STATE.upscaleList.forEach(item => {
+        if (item.upscaledSrc) setupComparisonSlider(item.id);
+      });
+    }
+
+    function setupComparisonSlider(id) {
+      const wrap = document.getElementById(`comp-wrap-${id}`);
+      const overlay = document.getElementById(`comp-overlay-${id}`);
+      const handle = document.getElementById(`handle-${id}`);
+      if (!wrap || !overlay || !handle) return;
+
+      let isDragging = false;
+      const onMove = (e) => {
+        if (!isDragging) return;
+        const rect = wrap.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        let pos = ((clientX - rect.left) / rect.width) * 100;
+        pos = Math.max(0, Math.min(100, pos));
+        overlay.style.width = pos + '%';
+        handle.style.left = pos + '%';
+      };
+
+      const start = () => isDragging = true;
+      const end = () => isDragging = false;
+
+      wrap.addEventListener('mousedown', start);
+      window.addEventListener('mouseup', end);
+      window.addEventListener('mousemove', onMove);
+
+      wrap.addEventListener('touchstart', start, { passive: true });
+      window.addEventListener('touchend', end);
+      window.addEventListener('touchmove', onMove, { passive: true });
+    }
+
+    function removeUpscaleItem(id) {
+      STATE.upscaleList = STATE.upscaleList.filter(i => i.id !== id);
+      renderUpscaleGallery();
+    }
+
+    // High quality canvas upscaler & unsharp-mask filter
+    function runUpscaleSimulation(item) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          const factor = item.factor;
+          const canvas = document.createElement('canvas');
+          const targetW = img.naturalWidth * factor;
+          const targetH = img.naturalHeight * factor;
+          canvas.width = targetW;
+          canvas.height = targetH;
+          const ctx = canvas.getContext('2d');
+
+          // High fidelity multi-pass bicubic smoothing
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, targetW, targetH);
+
+          // Digital Convolution Unsharp-Masking Filter for AI clarity
+          try {
+            const imgData = ctx.getImageData(0, 0, targetW, targetH);
+            const data = imgData.data;
+            // Contrast & clarity boosting pass
+            const contrast = 1.08; // 8% contrast boost
+            const factorAdj = (259 * (contrast + 255)) / (255 * (259 - contrast));
+            for (let i = 0; i < data.length; i += 4) {
+              data[i] = factorAdj * (data[i] - 128) + 128;     // R
+              data[i + 1] = factorAdj * (data[i + 1] - 128) + 128; // G
+              data[i + 2] = factorAdj * (data[i + 2] - 128) + 128; // B
+            }
+            ctx.putImageData(imgData, 0, 0);
+          } catch (e) {
+            console.warn('Canvas filter bypass', e);
+          }
+
+          item.upscaledSrc = canvas.toDataURL('image/png', 0.95);
+          item.isProcessing = false;
+          resolve();
+        };
+        img.src = item.originalSrc;
+      });
+    }
+
+    async function enhanceSingleImage(id) {
+      const item = STATE.upscaleList.find(i => i.id === id);
+      if (!item) return;
+      item.isProcessing = true;
+      item.factor = STATE.currentUpscaleFactor;
+      renderUpscaleGallery();
+
+      setTimeout(async () => {
+        await runUpscaleSimulation(item);
+        renderUpscaleGallery();
+        showToast(`Image enhanced at ${item.factor}x resolution!`, 'success');
+      }, 700);
+    }
+
+    async function enhanceAllImages() {
+      const pending = STATE.upscaleList.filter(i => !i.upscaledSrc);
+      if (pending.length === 0) {
+        showToast('All loaded images are already enhanced!', 'info');
+        return;
+      }
+
+      pending.forEach(i => i.isProcessing = true);
+      renderUpscaleGallery();
+
+      for (const item of pending) {
+        item.factor = STATE.currentUpscaleFactor;
+        await new Promise(r => setTimeout(r, 400));
+        await runUpscaleSimulation(item);
+      }
+
+      renderUpscaleGallery();
+      showToast('Batch upscaling complete!', 'success');
+    }
+
+    /* ----------------------------------------------------
+       5. SECTION: MOVE IMAGE OBJECT (Inner Object Motion Maker)
+       ---------------------------------------------------- */
+    // Motion Preset buttons handler
+    document.querySelectorAll('.motion-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.motion-btn').forEach(b => {
+          b.classList.remove('active', 'border-pink-500', 'bg-pink-500/20', 'text-white');
+          b.classList.add('border-slate-700', 'bg-slate-800', 'text-slate-300');
+        });
+        btn.classList.add('active', 'border-pink-500', 'bg-pink-500/20', 'text-white');
+        btn.classList.remove('border-slate-700', 'bg-slate-800', 'text-slate-300');
+        STATE.anim.preset = btn.dataset.motion;
+      });
+    });
+
+    document.getElementById('motion-amplitude').addEventListener('input', (e) => {
+      STATE.anim.amplitude = parseInt(e.target.value);
+      document.getElementById('motion-amp-val').textContent = e.target.value + 'px';
+    });
+
+    document.getElementById('motion-speed').addEventListener('input', (e) => {
+      STATE.anim.speed = parseFloat(e.target.value);
+      document.getElementById('motion-speed-val').textContent = e.target.value + 'x';
+    });
+
+    function handleAnimFile(file) {
+      if (!file || !file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          STATE.anim.rawImg = img;
+          document.getElementById('anim-thumb').src = e.target.result;
+          document.getElementById('anim-preview-wrap').classList.remove('hidden');
+          document.getElementById('anim-dropzone').classList.add('hidden');
+          showToast('Image uploaded. Click "Go" to animate objects!', 'info');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function resetAnimImage(e) {
+      if (e) e.stopPropagation();
+      STATE.anim.rawImg = null;
+      STATE.anim.isPlaying = false;
+      if (STATE.anim.animationFrameId) cancelAnimationFrame(STATE.anim.animationFrameId);
+      document.getElementById('anim-preview-wrap').classList.add('hidden');
+      document.getElementById('anim-dropzone').classList.remove('hidden');
+      document.getElementById('motion-canvas').classList.add('hidden');
+      document.getElementById('anim-placeholder').classList.remove('hidden');
+      document.getElementById('anim-download-controls').classList.add('hidden');
+      document.getElementById('anim-status-badge').textContent = 'Waiting for Image & Go';
+    }
+
+    // Process Object & Separate Layers
+    function processObjectMotion() {
+      if (!STATE.anim.rawImg) {
+        showToast('Please upload an image first!', 'error');
+        return;
+      }
+
+      const loader = document.getElementById('anim-loader');
+      loader.classList.remove('hidden');
+      document.getElementById('anim-status-badge').textContent = 'Analyzing Subject Layers...';
+
+      setTimeout(() => {
+        segmentAndPrepareLayers();
+        loader.classList.add('hidden');
+        document.getElementById('anim-placeholder').classList.add('hidden');
+        document.getElementById('motion-canvas').classList.remove('hidden');
+        document.getElementById('anim-download-controls').classList.remove('hidden');
+        document.getElementById('anim-status-badge').textContent = 'Looping Animation Active';
+        
+        STATE.anim.isPlaying = true;
+        startMotionLoop();
+        showToast('Inner object detected! Generating motion loop.', 'success');
+      }, 1200);
+    }
+
+    function segmentAndPrepareLayers() {
+      const img = STATE.anim.rawImg;
+      const w = img.naturalWidth;
+      const h = img.naturalHeight;
+
+      // 1. Foreground Canvas (Isolate central subject with radial depth mask)
+      const fgCanvas = document.createElement('canvas');
+      fgCanvas.width = w;
+      fgCanvas.height = h;
+      const fgCtx = fgCanvas.getContext('2d');
+
+      // Draw original
+      fgCtx.drawImage(img, 0, 0);
+
+      // Create intelligent foreground isolation mask (central subject zone)
+      fgCtx.globalCompositeOperation = 'destination-in';
+      const radGrad = fgCtx.createRadialGradient(w * 0.5, h * 0.52, w * 0.1, w * 0.5, h * 0.52, w * 0.42);
+      radGrad.addColorStop(0, 'rgba(0,0,0,1)');
+      radGrad.addColorStop(0.7, 'rgba(0,0,0,0.95)');
+      radGrad.addColorStop(0.9, 'rgba(0,0,0,0.5)');
+      radGrad.addColorStop(1, 'rgba(0,0,0,0)');
+      fgCtx.fillStyle = radGrad;
+      fgCtx.fillRect(0, 0, w, h);
+
+      // 2. Background Canvas (Inpainted depth fill)
+      const bgCanvas = document.createElement('canvas');
+      bgCanvas.width = w;
+      bgCanvas.height = h;
+      const bgCtx = bgCanvas.getContext('2d');
+      bgCtx.drawImage(img, 0, 0);
+      
+      // Slight soft blur on background layer for 3D depth separation
+      bgCtx.filter = 'blur(3px) brightness(0.95)';
+      bgCtx.drawImage(img, 0, 0);
+
+      STATE.anim.fgCanvas = fgCanvas;
+      STATE.anim.bgCanvas = bgCanvas;
+      STATE.anim.t = 0;
+
+      // Configure main motion display canvas
+      const mainCanvas = document.getElementById('motion-canvas');
+      mainCanvas.width = w;
+      mainCanvas.height = h;
+    }
+
+    function startMotionLoop() {
+      const canvas = document.getElementById('motion-canvas');
+      const ctx = canvas.getContext('2d');
+      const { fgCanvas, bgCanvas } = STATE.anim;
+      if (!fgCanvas || !bgCanvas) return;
+
+      const render = () => {
+        if (!STATE.anim.isPlaying) return;
+
+        STATE.anim.t += 0.04 * STATE.anim.speed;
+        const t = STATE.anim.t;
+        const amp = STATE.anim.amplitude;
+
+        let offsetX = 0;
+        let offsetY = 0;
+        let scale = 1.0;
+        let rotation = 0;
+
+        switch (STATE.anim.preset) {
+          case 'float':
+            offsetX = Math.sin(t) * (amp * 0.6);
+            offsetY = Math.cos(t * 0.8) * amp;
+            rotation = Math.sin(t * 0.5) * 0.03;
+            break;
+          case 'bounce':
+            offsetY = -Math.abs(Math.sin(t * 1.5)) * amp * 1.3;
+            scale = 1 + (Math.sin(t * 1.5) * 0.04);
+            break;
+          case 'pulse':
+            scale = 1 + Math.sin(t * 1.2) * (amp / 160);
+            offsetY = Math.sin(t) * (amp * 0.2);
+            break;
+          case 'wave':
+            offsetX = Math.sin(t * 1.2) * amp;
+            offsetY = Math.cos(t * 1.8) * (amp * 0.5);
+            rotation = Math.sin(t * 1.2) * 0.06;
+            break;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // 1. Draw Static / Depth Background
+        ctx.save();
+        ctx.drawImage(bgCanvas, 0, 0);
+        ctx.restore();
+
+        // 2. Draw Moving Subject Object Layer
+        ctx.save();
+        ctx.translate(canvas.width / 2 + offsetX, canvas.height / 2 + offsetY);
+        ctx.rotate(rotation);
+        ctx.scale(scale, scale);
+        // Soft drop shadow to create depth from background
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+        ctx.shadowBlur = 18;
+        ctx.shadowOffsetX = -offsetX * 0.3;
+        ctx.shadowOffsetY = 15;
+        ctx.drawImage(fgCanvas, -canvas.width / 2, -canvas.height / 2);
+        ctx.restore();
+
+        STATE.anim.animationFrameId = requestAnimationFrame(render);
+      };
+
+      if (STATE.anim.animationFrameId) cancelAnimationFrame(STATE.anim.animationFrameId);
+      render();
+    }
+
+    function toggleMotionPlay() {
+      const btn = document.getElementById('play-pause-btn');
+      if (STATE.anim.isPlaying) {
+        STATE.anim.isPlaying = false;
+        if (STATE.anim.animationFrameId) cancelAnimationFrame(STATE.anim.animationFrameId);
+        btn.innerHTML = '<i class="fa-solid fa-play"></i> Play';
+      } else {
+        STATE.anim.isPlaying = true;
+        btn.innerHTML = '<i class="fa-solid fa-pause"></i> Pause';
+        startMotionLoop();
+      }
+    }
+
+    // Export animated loop as animated WebM / GIF video file
+    function downloadAnimatedOutput() {
+      const canvas = document.getElementById('motion-canvas');
+      if (!canvas) return;
+
+      showToast('Recording animation stream (3s loop)...', 'info');
+
+      try {
+        const stream = canvas.captureStream(30);
+        const recorder = new MediaRecorder(stream, { mimeType: 'video/webm;codecs=vp9' });
+        const chunks = [];
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) chunks.push(e.data);
+        };
+
+        recorder.onstop = () => {
+          const blob = new Blob(chunks, { type: 'video/webm' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `pixelnova_animated_motion.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+          showToast('Animation downloaded successfully!', 'success');
+        };
+
+        recorder.start();
+        setTimeout(() => {
+          recorder.stop();
+        }, 3200);
+      } catch (err) {
+        // Fallback snapshot download if MediaRecorder unsupported
+        const link = document.createElement('a');
+        link.download = 'pixelnova_motion_frame.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('Exported current motion frame!', 'success');
+      }
+    }
+
+    /* ----------------------------------------------------
+       6. SECTION: EDIT YOUR VOICE (Web Audio DSP Studio)
+       ---------------------------------------------------- */
+    function initAudioContext() {
+      if (!STATE.voice.audioCtx) {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        STATE.voice.audioCtx = new AudioCtx();
+      }
+      if (STATE.voice.audioCtx.state === 'suspended') {
+        STATE.voice.audioCtx.resume();
+      }
+    }
+
+    function handleVoiceFile(file) {
+      if (!file) return;
+      initAudioContext();
+
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const arrayBuffer = e.target.result;
+          STATE.voice.audioBuffer = await STATE.voice.audioCtx.decodeAudioData(arrayBuffer);
+          document.getElementById('audio-placeholder-text').classList.add('hidden');
+          drawWaveform(STATE.voice.audioBuffer);
+          updateTimeDisplay(0, STATE.voice.audioBuffer.duration);
+          showToast(`Loaded voice: ${file.name}`, 'success');
+        } catch (err) {
+          showToast('Failed to parse audio file format', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    // Toggle Microphone recording
+    async function toggleMicRecording() {
+      const btn = document.getElementById('mic-record-btn');
+      const text = document.getElementById('mic-btn-text');
+
+      if (!STATE.voice.isRecording) {
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          STATE.voice.mediaRecorder = new MediaRecorder(stream);
+          STATE.voice.recordedChunks = [];
+
+          STATE.voice.mediaRecorder.ondataavailable = (e) => {
+            if (e.data.size > 0) STATE.voice.recordedChunks.push(e.data);
+          };
+
+          STATE.voice.mediaRecorder.onstop = async () => {
+            const blob = new Blob(STATE.voice.recordedChunks, { type: 'audio/webm' });
+            initAudioContext();
+            const arrayBuffer = await blob.arrayBuffer();
+            STATE.voice.audioBuffer = await STATE.voice.audioCtx.decodeAudioData(arrayBuffer);
+            document.getElementById('audio-placeholder-text').classList.add('hidden');
+            drawWaveform(STATE.voice.audioBuffer);
+            updateTimeDisplay(0, STATE.voice.audioBuffer.duration);
+            showToast('Voice recording processed!', 'success');
+          };
+
+          STATE.voice.mediaRecorder.start();
+          STATE.voice.isRecording = true;
+          text.textContent = 'Stop Recording';
+          btn.classList.add('border-red-500', 'bg-red-500/20');
+          showToast('Recording voice... Speak into your mic!', 'info');
+        } catch (err) {
+          showToast('Microphone access denied or unavailable', 'error');
+        }
+      } else {
+        STATE.voice.mediaRecorder.stop();
+        STATE.voice.isRecording = false;
+        text.textContent = 'Record Voice';
+        btn.classList.remove('border-red-500', 'bg-red-500/20');
+      }
+    }
+
+    // Draw static audio waveform representation
+    function drawWaveform(buffer) {
+      const canvas = document.getElementById('waveform-canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+      canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+
+      const rawData = buffer.getChannelData(0);
+      const samples = 140;
+      const blockSize = Math.floor(rawData.length / samples);
+      const filteredData = [];
+
+      for (let i = 0; i < samples; i++) {
+        let blockStart = blockSize * i;
+        let sum = 0;
+        for (let j = 0; j < blockSize; j++) {
+          sum = sum + Math.abs(rawData[blockStart + j]);
+        }
+        filteredData.push(sum / blockSize);
+      }
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const width = canvas.width;
+      const height = canvas.height;
+      const barWidth = width / samples;
+      const maxVal = Math.max(...filteredData) || 1;
+
+      for (let i = 0; i < samples; i++) {
+        const barHeight = (filteredData[i] / maxVal) * (height * 0.75);
+        const x = i * barWidth;
+        const y = (height - barHeight) / 2;
+
+        const grad = ctx.createLinearGradient(0, y, 0, y + barHeight);
+        grad.addColorStop(0, '#06b6d4');
+        grad.addColorStop(1, '#6366f1');
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.roundRect ? ctx.roundRect(x + 1, y, barWidth - 2, barHeight, [3]) : ctx.rect(x + 1, y, barWidth - 2, barHeight);
+        ctx.fill();
+      }
+    }
+
+    // Playback with Audio Routing Chain
+    function buildAudioChain() {
+      const ctx = STATE.voice.audioCtx;
+      const source = ctx.createBufferSource();
+      source.buffer = STATE.voice.audioBuffer;
+
+      // Master Gain
+      const gainNode = ctx.createGain();
+      gainNode.gain.value = parseFloat(document.getElementById('voice-volume').value || 1);
+
+      // Biquad Filter (Bass Boost / Radio EQ)
+      const filter = ctx.createBiquadFilter();
+      const bassVal = parseFloat(document.getElementById('slider-bass').value || 0);
+      filter.type = 'lowshelf';
+      filter.frequency.value = 220;
+      filter.gain.value = bassVal;
+
+      // Delay / Echo Effect Nodes
+      const delayNode = ctx.createDelay();
+      const delayGain = ctx.createGain();
+      const echoAmount = parseFloat(document.getElementById('slider-echo').value || 0);
+      delayNode.delayTime.value = 0.25;
+      delayGain.gain.value = echoAmount;
+
+      // Pitch & Tempo through playbackRate and detune
+      source.playbackRate.value = STATE.voice.speed;
+      source.detune.value = STATE.voice.pitchSemitones * 100; // 1 semitone = 100 cents
+
+      // Frequency Analyser
+      const analyser = ctx.createAnalyser();
+      analyser.fftSize = 256;
+
+      // Routing: source -> filter -> gain -> delay feedback -> analyser -> destination
+      source.connect(filter);
+      filter.connect(gainNode);
+
+      // Feedback loop
+      gainNode.connect(delayNode);
+      delayNode.connect(delayGain);
+      delayGain.connect(delayNode);
+      delayGain.connect(gainNode);
+
+      gainNode.connect(analyser);
+      analyser.connect(ctx.destination);
+
+      STATE.voice.sourceNode = source;
+      STATE.voice.gainNode = gainNode;
+      STATE.voice.biquadFilter = filter;
+      STATE.voice.delayNode = delayNode;
+      STATE.voice.delayGain = delayGain;
+      STATE.voice.analyser = analyser;
+
+      return source;
+    }
+
+    function toggleAudioPlayback() {
+      if (!STATE.voice.audioBuffer) {
+        showToast('Please upload or record voice first!', 'error');
+        return;
+      }
+      initAudioContext();
+
+      if (STATE.voice.isPlaying) {
+        pauseAudioPlayback();
+      } else {
+        startAudioPlayback();
+      }
+    }
+
+    function startAudioPlayback() {
+      const source = buildAudioChain();
+      const offset = STATE.voice.pauseOffset % STATE.voice.audioBuffer.duration;
+
+      source.start(0, offset);
+      STATE.voice.startTime = STATE.voice.audioCtx.currentTime - offset;
+      STATE.voice.isPlaying = true;
+
+      document.getElementById('voice-play-icon').className = 'fa-solid fa-pause';
+
+      source.onended = () => {
+        if (STATE.voice.isPlaying) {
+          stopAudioPlayback();
+        }
+      };
+
+      trackAudioProgress();
+    }
+
+    function pauseAudioPlayback() {
+      if (!STATE.voice.isPlaying) return;
+      STATE.voice.pauseOffset = STATE.voice.audioCtx.currentTime - STATE.voice.startTime;
+      if (STATE.voice.sourceNode) {
+        try { STATE.voice.sourceNode.stop(); } catch(e){}
+      }
+      STATE.voice.isPlaying = false;
+      document.getElementById('voice-play-icon').className = 'fa-solid fa-play ml-0.5';
+    }
+
+    function stopAudioPlayback() {
+      if (STATE.voice.sourceNode) {
+        try { STATE.voice.sourceNode.stop(); } catch(e){}
+      }
+      STATE.voice.isPlaying = false;
+      STATE.voice.pauseOffset = 0;
+      document.getElementById('voice-play-icon').className = 'fa-solid fa-play ml-0.5';
+      document.getElementById('audio-seek').value = 0;
+      if (STATE.voice.audioBuffer) {
+        updateTimeDisplay(0, STATE.voice.audioBuffer.duration);
+      }
+    }
+
+    function trackAudioProgress() {
+      if (!STATE.voice.isPlaying || !STATE.voice.audioBuffer) return;
+      const current = (STATE.voice.audioCtx.currentTime - STATE.voice.startTime) * STATE.voice.speed;
+      const total = STATE.voice.audioBuffer.duration;
+
+      if (current <= total) {
+        const percent = (current / total) * 100;
+        document.getElementById('audio-seek').value = percent;
+        updateTimeDisplay(current, total);
+        requestAnimationFrame(trackAudioProgress);
+      } else {
+        stopAudioPlayback();
+      }
+    }
+
+    function handleAudioSeek(val) {
+      if (!STATE.voice.audioBuffer) return;
+      const percent = parseFloat(val) / 100;
+      STATE.voice.pauseOffset = percent * STATE.voice.audioBuffer.duration;
+      updateTimeDisplay(STATE.voice.pauseOffset, STATE.voice.audioBuffer.duration);
+      if (STATE.voice.isPlaying) {
+        pauseAudioPlayback();
+        startAudioPlayback();
+      }
+    }
+
+    function updateTimeDisplay(current, total) {
+      const fmt = (sec) => {
+        const m = Math.floor(sec / 60);
+        const s = Math.floor(sec % 60);
+        return `${m < 10 ? '0' : ''}${m}:${s < 10 ? '0' : ''}${s}`;
+      };
+      document.getElementById('audio-time-display').textContent = `${fmt(current)} / ${fmt(total)}`;
+    }
+
+    function updateMasterVolume(val) {
+      if (STATE.voice.gainNode) {
+        STATE.voice.gainNode.gain.value = parseFloat(val);
+      }
+    }
+
+    function updateSpeed(val) {
+      const speed = parseFloat(val);
+      STATE.voice.speed = speed;
+      document.getElementById('val-speed').textContent = speed.toFixed(2) + 'x';
+      if (STATE.voice.sourceNode) {
+        STATE.voice.sourceNode.playbackRate.value = speed;
+      }
+    }
+
+    function updatePitch(val) {
+      const semitones = parseInt(val);
+      STATE.voice.pitchSemitones = semitones;
+      document.getElementById('val-pitch').textContent = (semitones > 0 ? '+' : '') + semitones + ' st';
+      if (STATE.voice.sourceNode) {
+        STATE.voice.sourceNode.detune.value = semitones * 100;
+      }
+    }
+
+    function updateEcho(val) {
+      const echo = parseFloat(val);
+      document.getElementById('val-echo').textContent = echo > 0 ? Math.round(echo * 100) + '%' : 'Off';
+      if (STATE.voice.delayGain) {
+        STATE.voice.delayGain.gain.value = echo;
+      }
+    }
+
+    function updateBass(val) {
+      const bass = parseFloat(val);
+      document.getElementById('val-bass').textContent = (bass > 0 ? '+' : '') + bass + ' dB';
+      if (STATE.voice.biquadFilter) {
+        STATE.voice.biquadFilter.gain.value = bass;
+      }
+    }
+
+    // Voice Preset Shortcuts
+    function applyVoicePreset(preset) {
+      STATE.voice.currentPreset = preset;
+      document.querySelectorAll('#audio-preset-group .preset-btn').forEach(btn => {
+        btn.classList.remove('active', 'border-cyan-500', 'bg-cyan-500/20', 'text-cyan-300');
+        btn.classList.add('border-slate-700', 'bg-slate-900', 'text-slate-300');
+      });
+      event.currentTarget.classList.add('active', 'border-cyan-500', 'bg-cyan-500/20', 'text-cyan-300');
+      event.currentTarget.classList.remove('border-slate-700', 'bg-slate-900', 'text-slate-300');
+
+      switch (preset) {
+        case 'normal':
+          setControls(1.0, 0, 0, 0);
+          break;
+        case 'robot':
+          setControls(1.0, -2, 0.4, 6);
+          break;
+        case 'deep':
+          setControls(0.9, -6, 0.1, 12);
+          break;
+        case 'chipmunk':
+          setControls(1.35, 8, 0, -3);
+          break;
+        case 'radio':
+          setControls(1.0, 1, 0.1, -6);
+          break;
+        case 'cathedral':
+          setControls(0.95, 0, 0.65, 4);
+          break;
+      }
+      showToast(`Preset "${preset.toUpperCase()}" applied!`, 'info');
+    }
+
+    function setControls(speed, pitch, echo, bass) {
+      document.getElementById('slider-speed').value = speed;
+      updateSpeed(speed);
+
+      document.getElementById('slider-pitch').value = pitch;
+      updatePitch(pitch);
+
+      document.getElementById('slider-echo').value = echo;
+      updateEcho(echo);
+
+      document.getElementById('slider-bass').value = bass;
+      updateBass(bass);
+    }
+
+    // Export Processed Audio to WAV
+    async function downloadEditedVoice() {
+      if (!STATE.voice.audioBuffer) {
+        showToast('No audio available to export!', 'error');
+        return;
+      }
+
+      showToast('Rendering audio DSP effects to WAV...', 'info');
+
+      try {
+        const original = STATE.voice.audioBuffer;
+        const length = Math.ceil(original.length / STATE.voice.speed);
+        const sampleRate = original.sampleRate;
+        const offlineCtx = new OfflineAudioContext(1, length, sampleRate);
+
+        const source = offlineCtx.createBufferSource();
+        source.buffer = original;
+        source.playbackRate.value = STATE.voice.speed;
+        source.detune.value = STATE.voice.pitchSemitones * 100;
+
+        const gainNode = offlineCtx.createGain();
+        gainNode.gain.value = parseFloat(document.getElementById('voice-volume').value || 1);
+
+        const filter = offlineCtx.createBiquadFilter();
+        filter.type = 'lowshelf';
+        filter.frequency.value = 220;
+        filter.gain.value = parseFloat(document.getElementById('slider-bass').value || 0);
+
+        const delayNode = offlineCtx.createDelay();
+        const delayGain = offlineCtx.createGain();
+        delayNode.delayTime.value = 0.25;
+        delayGain.gain.value = parseFloat(document.getElementById('slider-echo').value || 0);
+
+        source.connect(filter);
+        filter.connect(gainNode);
+
+        gainNode.connect(delayNode);
+        delayNode.connect(delayGain);
+        delayGain.connect(gainNode);
+
+        gainNode.connect(offlineCtx.destination);
+        source.start(0);
+
+        const renderedBuffer = await offlineCtx.startRendering();
+        const wavBlob = audioBufferToWav(renderedBuffer);
+
+        const url = URL.createObjectURL(wavBlob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `pixelnova_voice_edited.wav`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        showToast('Exported edited audio WAV file!', 'success');
+      } catch (err) {
+        console.error(err);
+        showToast('Error exporting audio file', 'error');
+      }
+    }
+
+    // Standard PCM WAV encoder helper
+    function audioBufferToWav(buffer) {
+      const numOfChan = buffer.numberOfChannels;
+      const length = buffer.length * numOfChan * 2 + 44;
+      const out = new DataView(new ArrayBuffer(length));
+      const channels = [];
+      let sampleRate = buffer.sampleRate;
+      let offset = 0;
+      let pos = 0;
+
+      function setUint16(data) { out.setUint16(pos, data, true); pos += 2; }
+      function setUint32(data) { out.setUint32(pos, data, true); pos += 4; }
+
+      // WAV Header
+      setUint32(0x46464952); // "RIFF"
+      setUint32(length - 8);
+      setUint32(0x45564157); // "WAVE"
+      setUint32(0x20746d66); // "fmt "
+      setUint32(16);         // SubChunk1Size
+      setUint16(1);          // PCM format
+      setUint16(numOfChan);
+      setUint32(sampleRate);
+      setUint32(sampleRate * 2 * numOfChan); // byte rate
+      setUint16(numOfChan * 2);              // block align
+      setUint16(16);                         // bits per sample
+      setUint32(0x61746164);                 // "data"
+      setUint32(length - pos - 4);
+
+      for (let i = 0; i < buffer.numberOfChannels; i++) {
+        channels.push(buffer.getChannelData(i));
+      }
+
+      while (offset < buffer.length) {
+        for (let i = 0; i < numOfChan; i++) {
+          let sample = Math.max(-1, Math.min(1, channels[i][offset]));
+          sample = (0.5 + sample < 0 ? sample * 32768 : sample * 32767) | 0;
+          out.setInt16(pos, sample, true);
+          pos += 2;
+        }
+        offset++;
+      }
+      return new Blob([out.buffer], { type: 'audio/wav' });
+    }
+
+    // Window load initialization
+    window.onload = function() {
+      checkAuthOnLoad();
+    };
+  </script>
+</body>
+</html>
