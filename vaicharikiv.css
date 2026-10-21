@@ -41,4 +41,8 @@
       cursor: ew-resize;
       box-shadow: 0 0 10px rgba(255,255,255,0.7);
     }
+    .logo{
+          border: 0rem solid none;
+          border-radius: 0.802em;
+    }
   </style>
